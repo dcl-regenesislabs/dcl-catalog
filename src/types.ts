@@ -1,3 +1,5 @@
+import { Entity } from "@dcl/sdk/ecs"
+
 // Wearable slot categories matching DCL's slot system
 export type WearableCategory =
   | 'upper_body'
@@ -48,6 +50,7 @@ export interface CategoryDef {
 // Per-player state
 export interface PlayerBoothState {
   userId: string
+  baseEntity: Entity,
   cloneEntity: number       // -1 = no clone yet
   labelEntity: number       // -1 = no label yet
   baseWearables: string[]   // wearables when they entered
