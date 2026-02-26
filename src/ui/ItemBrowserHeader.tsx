@@ -12,10 +12,10 @@ export function ItemBrowserHeader({ onBack, onReset, onClose }: ItemBrowserHeade
     <UiEntity
       uiTransform={{
         width: '100%',
-        height: 52,
+        height: 62,
         flexDirection: 'row',
         alignItems: 'center',
-        padding: { left: 8, right: 8, top: 0, bottom: 0 }
+        padding: { left: 10, right: 10, top: 0, bottom: 0 }
       }}
       uiBackground={{ color: { r: 0.08, g: 0.04, b: 0.18, a: 1 } }}
     >
@@ -24,14 +24,14 @@ export function ItemBrowserHeader({ onBack, onReset, onClose }: ItemBrowserHeade
         value="‹"
         variant="secondary"
         onMouseDown={onBack}
-        uiTransform={{ width: 36, height: 36, margin: { right: 8 } }}
-        fontSize={20}
+        uiTransform={{ width: 43, height: 43, margin: { right: 10 } }}
+        fontSize={24}
       />
 
       {/* Current category label */}
       <Label
         value={catalogState.activeCategoryLabel}
-        fontSize={16}
+        fontSize={19}
         color={{ r: 0.95, g: 0.85, b: 1, a: 1 }}
         uiTransform={{ flexGrow: 1 }}
       />
@@ -41,8 +41,8 @@ export function ItemBrowserHeader({ onBack, onReset, onClose }: ItemBrowserHeade
         value="Reset"
         variant="secondary"
         onMouseDown={onReset}
-        uiTransform={{ width: 64, height: 32, margin: { right: 8 } }}
-        fontSize={12}
+        uiTransform={{ width: 77, height: 38, margin: { right: 10 } }}
+        fontSize={14}
         color={{ r: 1, g: 0.5, b: 0.3, a: 1 }}
       />
 
@@ -51,8 +51,8 @@ export function ItemBrowserHeader({ onBack, onReset, onClose }: ItemBrowserHeade
         value="✕"
         variant="secondary"
         onMouseDown={onClose}
-        uiTransform={{ width: 36, height: 36 }}
-        fontSize={18}
+        uiTransform={{ width: 43, height: 43 }}
+        fontSize={22}
       />
     </UiEntity>
   )

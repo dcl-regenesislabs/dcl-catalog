@@ -38,15 +38,15 @@ export function ItemBrowserScreen({ onBack, onReset, onClose, currentWearables }
       <UiEntity
         uiTransform={{
           width: '100%',
-          height: 44,
+          height: 53,
           flexDirection: 'row',
           alignItems: 'center',
-          padding: { left: 10, right: 10, top: 4, bottom: 4 }
+          padding: { left: 12, right: 12, top: 5, bottom: 5 }
         }}
         uiBackground={{ color: { r: 0.06, g: 0.04, b: 0.14, a: 1 } }}
       >
         <UiEntity
-          uiTransform={{ flexGrow: 1, height: 36, margin: { right: 12 } }}
+          uiTransform={{ flexGrow: 1, height: 43, margin: { right: 14 } }}
           uiBackground={{ color: { r: 0.12, g: 0.08, b: 0.22, a: 1 } }}
         >
           <Input
@@ -54,9 +54,9 @@ export function ItemBrowserScreen({ onBack, onReset, onClose, currentWearables }
             placeholderColor={{ r: 0.5, g: 0.5, b: 0.6, a: 1 }}
             onChange={(val) => setSearchQuery(val)}
             onSubmit={(val) => setSearchQuery(val)}
-            fontSize={14}
+            fontSize={17}
             color={{ r: 0.95, g: 0.9, b: 1, a: 1 }}
-            uiTransform={{ width: '100%', height: '100%', padding: { left: 10 } }}
+            uiTransform={{ width: '100%', height: '100%', padding: { left: 12 } }}
           />
         </UiEntity>
         {FILTERS.map((f) => {
@@ -67,8 +67,8 @@ export function ItemBrowserScreen({ onBack, onReset, onClose, currentWearables }
               value={f.label}
               variant={isActive ? 'primary' : 'secondary'}
               onMouseDown={() => setFilter(f.value)}
-              uiTransform={{ width: 90, height: 28, margin: { right: 6 } }}
-              fontSize={13}
+              uiTransform={{ width: 108, height: 34, margin: { right: 7 } }}
+              fontSize={16}
             />
           )
         })}
@@ -78,18 +78,18 @@ export function ItemBrowserScreen({ onBack, onReset, onClose, currentWearables }
       <UiEntity
         uiTransform={{
           width: '100%',
-          height: 36,
+          height: 43,
           flexDirection: 'row',
           alignItems: 'center',
-          padding: { left: 10, right: 10, top: 2, bottom: 2 }
+          padding: { left: 12, right: 12, top: 2, bottom: 2 }
         }}
         uiBackground={{ color: { r: 0.05, g: 0.03, b: 0.12, a: 1 } }}
       >
         <Label
           value="Sort:"
-          fontSize={12}
+          fontSize={14}
           color={{ r: 0.6, g: 0.55, b: 0.8, a: 1 }}
-          uiTransform={{ margin: { right: 8 } }}
+          uiTransform={{ margin: { right: 10 } }}
         />
         {SORTS.map((s) => {
           const isActive = catalogState.sort === s.value
@@ -99,8 +99,8 @@ export function ItemBrowserScreen({ onBack, onReset, onClose, currentWearables }
               value={s.label}
               variant={isActive ? 'primary' : 'secondary'}
               onMouseDown={() => setSort(s.value)}
-              uiTransform={{ width: 80, height: 26, margin: { right: 6 } }}
-              fontSize={12}
+              uiTransform={{ width: 96, height: 31, margin: { right: 7 } }}
+              fontSize={14}
             />
           )
         })}

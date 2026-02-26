@@ -25,7 +25,7 @@ export function CategoryScreen({ onSelectCategory, onReset, onClose }: CategoryS
       <UiEntity
         uiTransform={{
           width: '100%',
-          height: 36,
+          height: 43,
           justifyContent: 'center',
           alignItems: 'center'
         }}
@@ -33,7 +33,7 @@ export function CategoryScreen({ onSelectCategory, onReset, onClose }: CategoryS
       >
         <Label
           value="Choose a category to browse"
-          fontSize={13}
+          fontSize={16}
           color={{ r: 0.7, g: 0.6, b: 0.9, a: 1 }}
         />
       </UiEntity>
@@ -46,7 +46,7 @@ export function CategoryScreen({ onSelectCategory, onReset, onClose }: CategoryS
           flexWrap: 'wrap',
           justifyContent: 'center',
           alignContent: 'flex-start',
-          padding: 8,
+          padding: 10,
           overflow: 'scroll'
         }}
         uiBackground={{ color: { r: 0.05, g: 0.03, b: 0.10, a: 1 } }}

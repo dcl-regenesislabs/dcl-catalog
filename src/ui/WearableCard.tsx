@@ -45,15 +45,15 @@ export function WearableCard({ item, isWearing }: WearableCardProps): ReactEcs.J
   const borderColor = isWearing
     ? { r: 0.60, g: 0.20, b: 1.0, a: 1 }
     : { r: 0.10, g: 0.07, b: 0.18, a: 1 }
-  const borderWidth = isWearing ? 3 : 0
+  const borderWidth = isWearing ? 4 : 0
 
   return (
     // Outer wrapper — its background shows through the padding as an outline
     <UiEntity
       uiTransform={{
-        width: 176,
-        height: 230,
-        margin: 6,
+        width: 211,
+        height: 276,
+        margin: 7,
         flexDirection: 'column',
         padding: borderWidth,
         overflow: 'hidden'
@@ -83,7 +83,7 @@ export function WearableCard({ item, isWearing }: WearableCardProps): ReactEcs.J
         >
           {/* Thumbnail */}
           <UiEntity
-            uiTransform={{ width: '100%', height: 140 }}
+            uiTransform={{ width: '100%', height: 168 }}
             uiBackground={{
               color: { r: 1, g: 1, b: 1, a: 1 },
               texture: { src: thumbnailUrl },
@@ -93,24 +93,24 @@ export function WearableCard({ item, isWearing }: WearableCardProps): ReactEcs.J
 
           {/* Rarity colour bar */}
           <UiEntity
-            uiTransform={{ width: '100%', height: 3 }}
+            uiTransform={{ width: '100%', height: 4 }}
             uiBackground={{ color: { ...rarityColor, a: 1 } }}
           />
 
           {/* Item name */}
           <Label
             value={truncate(item.name, 18)}
-            fontSize={12}
+            fontSize={14}
             color={{ r: 0.9, g: 0.88, b: 1, a: 1 }}
-            uiTransform={{ width: '100%', height: 20, margin: { top: 4, left: 6 } }}
+            uiTransform={{ width: '100%', height: 24, margin: { top: 5, left: 7 } }}
           />
 
           {/* Price */}
           <Label
             value={formatMana(item.price)}
-            fontSize={11}
+            fontSize={14}
             color={{ r: 0.75, g: 0.5, b: 1.0, a: 1 }}
-            uiTransform={{ width: '100%', height: 16, margin: { left: 6 } }}
+            uiTransform={{ width: '100%', height: 19, margin: { left: 7 } }}
           />
         </UiEntity>
 
@@ -118,7 +118,7 @@ export function WearableCard({ item, isWearing }: WearableCardProps): ReactEcs.J
         <UiEntity
           uiTransform={{
             width: '100%',
-            height: 36,
+            height: 43,
             justifyContent: 'center',
             alignItems: 'center'
           }}
@@ -128,8 +128,8 @@ export function WearableCard({ item, isWearing }: WearableCardProps): ReactEcs.J
             value="Buy"
             variant="secondary"
             onMouseDown={() => handleBuy(item)}
-            uiTransform={{ width: 148, height: 26 }}
-            fontSize={12}
+            uiTransform={{ width: 178, height: 31 }}
+            fontSize={14}
           />
         </UiEntity>
 

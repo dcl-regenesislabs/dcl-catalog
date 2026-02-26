@@ -16,7 +16,7 @@ export function WearableGrid({ items, currentWearables }: WearableGridProps): Re
         flexWrap: 'wrap',
         justifyContent: 'flex-start',
         alignContent: 'flex-start',
-        padding: 6,
+        padding: 7,
         overflow: 'hidden'
       }}
       uiBackground={{ color: { r: 0.05, g: 0.03, b: 0.10, a: 1 } }}
@@ -25,14 +25,14 @@ export function WearableGrid({ items, currentWearables }: WearableGridProps): Re
         <UiEntity
           uiTransform={{
             width: '100%',
-            height: 120,
+            height: 144,
             justifyContent: 'center',
             alignItems: 'center'
           }}
         >
           <Label
             value="No items found"
-            fontSize={15}
+            fontSize={18}
             color={{ r: 0.5, g: 0.5, b: 0.7, a: 1 }}
           />
         </UiEntity>

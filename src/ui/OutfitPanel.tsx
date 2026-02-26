@@ -11,18 +11,18 @@ interface OutfitPanelProps {
   onClose: () => void
 }
 
-// Panel dimensions (matches catalog)
-const PANEL_W = 1040
-const PANEL_H = 660
-const HEADER_H = 56
-const SUBHEADER_H = 36
-const BODY_H = PANEL_H - HEADER_H - SUBHEADER_H  // 568
-const COL_W = 519   // (PANEL_W - 2px divider) / 2
+// Panel dimensions (~1.2x scale — matches catalog)
+const PANEL_W = 1248
+const PANEL_H = 792
+const HEADER_H = 67
+const SUBHEADER_H = 43
+const BODY_H = PANEL_H - HEADER_H - SUBHEADER_H  // 682
+const COL_W = 623   // (PANEL_W - 2px divider) / 2
 
 // Card dimensions — small enough to fit 4 rows in BODY_H
-const CARD_W = 145
-const CARD_H = 116
-const CARD_MARGIN = 5
+const CARD_W = 174
+const CARD_H = 139
+const CARD_MARGIN = 6
 
 function truncate(text: string, maxLen: number): string {
   if (text.length <= maxLen) return text
@@ -57,7 +57,7 @@ function BaseMiniCard({ entry, onToggle }: BaseMiniCardProps): ReactEcs.JSX.Elem
     >
       {/* Thumbnail */}
       <UiEntity
-        uiTransform={{ width: '100%', height: 78 }}
+        uiTransform={{ width: '100%', height: 94 }}
         uiBackground={{
           color: isHidden ? thumbDimBg : { r: 1, g: 1, b: 1, a: 1 },
           texture: { src: thumbUrl },
@@ -68,18 +68,18 @@ function BaseMiniCard({ entry, onToggle }: BaseMiniCardProps): ReactEcs.JSX.Elem
       {/* Name */}
       <Label
         value={truncate(entry.name, 18)}
-        fontSize={11}
+        fontSize={14}
         color={{ r: isHidden ? 0.4 : 0.88, g: isHidden ? 0.35 : 0.86, b: isHidden ? 0.55 : 1, a: 1 }}
-        uiTransform={{ width: '100%', height: 20, margin: { top: 4, left: 5 } }}
+        uiTransform={{ width: '100%', height: 24, margin: { top: 5, left: 6 } }}
       />
 
       {/* Hidden indicator */}
       {isHidden && (
         <Label
           value="HIDDEN  ·  click to show"
-          fontSize={9}
+          fontSize={11}
           color={{ r: 0.55, g: 0.45, b: 0.75, a: 1 }}
-          uiTransform={{ width: '100%', height: 14, margin: { left: 5 } }}
+          uiTransform={{ width: '100%', height: 17, margin: { left: 6 } }}
         />
       )}
     </UiEntity>
@@ -109,7 +109,7 @@ function TriedOnMiniCard({ slot, onRemove }: TriedOnMiniCardProps): ReactEcs.JSX
     >
       {/* Thumbnail */}
       <UiEntity
-        uiTransform={{ width: '100%', height: 58 }}
+        uiTransform={{ width: '100%', height: 70 }}
         uiBackground={{
           color: { r: 1, g: 1, b: 1, a: 1 },
           texture: { src: thumbUrl },
@@ -120,17 +120,17 @@ function TriedOnMiniCard({ slot, onRemove }: TriedOnMiniCardProps): ReactEcs.JSX
       {/* Category label */}
       <Label
         value={slot.label}
-        fontSize={9}
+        fontSize={11}
         color={{ r: 0.7, g: 0.6, b: 1, a: 1 }}
-        uiTransform={{ width: '100%', height: 13, margin: { top: 3, left: 5 } }}
+        uiTransform={{ width: '100%', height: 16, margin: { top: 4, left: 6 } }}
       />
 
       {/* Item name */}
       <Label
         value={truncate(slot.name, 18)}
-        fontSize={11}
+        fontSize={14}
         color={{ r: 0.9, g: 0.88, b: 1, a: 1 }}
-        uiTransform={{ width: '100%', height: 16, margin: { top: 2, left: 5 } }}
+        uiTransform={{ width: '100%', height: 19, margin: { top: 2, left: 6 } }}
       />
 
       {/* Spacer */}
@@ -140,7 +140,7 @@ function TriedOnMiniCard({ slot, onRemove }: TriedOnMiniCardProps): ReactEcs.JSX
       <UiEntity
         uiTransform={{
           width: '100%',
-          height: 28,
+          height: 34,
           justifyContent: 'center',
           alignItems: 'center'
         }}
@@ -150,8 +150,8 @@ function TriedOnMiniCard({ slot, onRemove }: TriedOnMiniCardProps): ReactEcs.JSX
           value="✕ Remove"
           variant="secondary"
           onMouseDown={() => onRemove(slot.category)}
-          uiTransform={{ width: 130, height: 22 }}
-          fontSize={10}
+          uiTransform={{ width: 156, height: 26 }}
+          fontSize={12}
           color={{ r: 1, g: 0.4, b: 0.3, a: 1 }}
         />
       </UiEntity>
@@ -186,13 +186,13 @@ export function OutfitPanel({
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: { left: 16, right: 12, top: 0, bottom: 0 }
+          padding: { left: 19, right: 14, top: 0, bottom: 0 }
         }}
         uiBackground={{ color: { r: 0.08, g: 0.04, b: 0.18, a: 1 } }}
       >
         <Label
           value="MY OUTFIT"
-          fontSize={18}
+          fontSize={22}
           color={{ r: 0.95, g: 0.85, b: 1, a: 1 }}
           uiTransform={{ flexGrow: 1 }}
         />
@@ -200,16 +200,16 @@ export function OutfitPanel({
           value="Reset"
           variant="secondary"
           onMouseDown={onResetAll}
-          uiTransform={{ width: 72, height: 32, margin: { right: 8 } }}
-          fontSize={13}
+          uiTransform={{ width: 86, height: 38, margin: { right: 10 } }}
+          fontSize={16}
           color={{ r: 1, g: 0.5, b: 0.3, a: 1 }}
         />
         <Button
           value="✕"
           variant="secondary"
           onMouseDown={onClose}
-          uiTransform={{ width: 36, height: 36 }}
-          fontSize={18}
+          uiTransform={{ width: 43, height: 43 }}
+          fontSize={22}
         />
       </UiEntity>
 
@@ -232,7 +232,7 @@ export function OutfitPanel({
         >
           <Label
             value={`MY BACKPACK (${baseWearables.length})  ·  click to hide/show`}
-            fontSize={11}
+            fontSize={14}
             color={{ r: 0.65, g: 0.55, b: 0.85, a: 1 }}
           />
         </UiEntity>
@@ -253,7 +253,7 @@ export function OutfitPanel({
         >
           <Label
             value={`TRYING ON (${slots.length})`}
-            fontSize={11}
+            fontSize={14}
             color={{ r: 0.65, g: 0.55, b: 0.85, a: 1 }}
           />
         </UiEntity>
@@ -276,7 +276,7 @@ export function OutfitPanel({
             flexDirection: 'row',
             flexWrap: 'wrap',
             alignContent: 'flex-start',
-            padding: 6,
+            padding: 7,
             overflow: 'scroll'
           }}
           uiBackground={{ color: { r: 0.05, g: 0.03, b: 0.10, a: 1 } }}
@@ -285,14 +285,14 @@ export function OutfitPanel({
             <UiEntity
               uiTransform={{
                 width: '100%',
-                height: 100,
+                height: 120,
                 justifyContent: 'center',
                 alignItems: 'center'
               }}
             >
               <Label
                 value="No wearables found"
-                fontSize={13}
+                fontSize={16}
                 color={{ r: 0.4, g: 0.4, b: 0.6, a: 1 }}
               />
             </UiEntity>
@@ -321,7 +321,7 @@ export function OutfitPanel({
             flexDirection: 'row',
             flexWrap: 'wrap',
             alignContent: 'flex-start',
-            padding: 6,
+            padding: 7,
             overflow: 'scroll'
           }}
           uiBackground={{ color: { r: 0.05, g: 0.03, b: 0.10, a: 1 } }}
@@ -330,7 +330,7 @@ export function OutfitPanel({
             <UiEntity
               uiTransform={{
                 width: '100%',
-                height: 100,
+                height: 120,
                 justifyContent: 'center',
                 alignItems: 'center',
                 flexDirection: 'column'
@@ -338,14 +338,14 @@ export function OutfitPanel({
             >
               <Label
                 value="Nothing tried on yet"
-                fontSize={13}
+                fontSize={16}
                 color={{ r: 0.4, g: 0.4, b: 0.6, a: 1 }}
               />
               <Label
                 value="Open Catalog to browse"
-                fontSize={11}
+                fontSize={14}
                 color={{ r: 0.35, g: 0.35, b: 0.55, a: 1 }}
-                uiTransform={{ margin: { top: 6 } }}
+                uiTransform={{ margin: { top: 7 } }}
               />
             </UiEntity>
           ) : (

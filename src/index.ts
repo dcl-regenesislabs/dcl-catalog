@@ -7,7 +7,7 @@ import { setupUi, setUiCallbacks, setOutfitPanelCallbacks } from './ui'
 const LOG = (msg: string, ...args: unknown[]) => console.log('[DCL Catalog]', msg, ...args)
 import { setupDressingRoom, setBoothCallbacks, boothStates, syncRemotePlayers } from './dressingRoom'
 import { setupSocialLayer, broadcastOutfit, spawnFloatingLabel, updateFloatingLabel } from './socialLayer'
-import { setCatalogCallbacks, showCatalog, hideCatalog, showOutfitPanel } from './catalogUI'
+import { setCatalogCallbacks, hideCatalog } from './catalogUI'
 import {
   applyWearableToClone,
   resetCloneToBase,
@@ -175,10 +175,8 @@ export function main(): void {
   // 5. Wire booth callbacks
   LOG('step 5: setBoothCallbacks')
   setBoothCallbacks(
-    // onLocalPlayerEnter — show HUD/catalog, open outfit panel, spawn label
+    // onLocalPlayerEnter — HUD stays visible, panels stay hidden; spawn label
     (state: PlayerBoothState) => {
-      showCatalog()
-      showOutfitPanel()
       const p = getPlayer()
       spawnFloatingLabel(state, p?.name ?? 'Player')
     },
@@ -226,10 +224,7 @@ export function main(): void {
   })
   LOG('step 7: setupSocialLayer done')
 
-  // 8. Show catalog immediately so the scene doesn't feel stuck while player data loads
-  LOG('step 8: showCatalog')
-  showCatalog()
-  LOG('step 8: showCatalog done')
+  // 8. Panels default to hidden; player opens Catalog or My Outfit from HUD when ready
 
   // 9. Sync any remote players already in the scene when this client joined
   LOG('step 9: scheduling syncRemotePlayers in 1s')

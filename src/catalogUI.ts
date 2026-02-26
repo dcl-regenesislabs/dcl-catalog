@@ -1,8 +1,11 @@
 import { executeTask } from '@dcl/sdk/ecs'
 import { CatalogState, MarketplaceItem, WearableCategory, CategoryDef, SortOption } from './types'
-import { fetchWearables } from './marketplaceApi'
+import { fetchWearables, fetchAllWearables } from './marketplaceApi'
 
 const PAGE_SIZE = 10
+
+/** When sorting by name we fetch the full category and paginate in memory. */
+let nameSortFullList: MarketplaceItem[] | null = null
 
 // ─── Category definitions — all 17 DCL wearable slots ────────────────────────
 export const CATALOG_CATEGORIES: CategoryDef[] = [
@@ -73,6 +76,7 @@ export function showCatalog(): void {
 }
 
 export function hideCatalog(): void {
+  nameSortFullList = null
   setState({ visible: false, items: [], searchQuery: '' })
 }
 
@@ -89,6 +93,7 @@ export function showOutfitPanel(): void {
 }
 
 export function selectCategory(category: WearableCategory, label: string): void {
+  nameSortFullList = null
   setState({
     screen: 'items',
     activeCategory: category,
@@ -102,18 +107,37 @@ export function selectCategory(category: WearableCategory, label: string): void 
 }
 
 export function goBackToCategories(): void {
+  nameSortFullList = null
   setState({ screen: 'categories', items: [], searchQuery: '' })
 }
 
 // ─── Pagination ───────────────────────────────────────────────────────────────
 export function nextPage(): void {
   if (catalogState.page >= catalogState.totalPages - 1) return
+  if (nameSortFullList !== null) {
+    const nextPage = catalogState.page + 1
+    const start = nextPage * PAGE_SIZE
+    setState({
+      page: nextPage,
+      items: nameSortFullList.slice(start, start + PAGE_SIZE)
+    })
+    return
+  }
   setState({ page: catalogState.page + 1 })
   loadItems()
 }
 
 export function prevPage(): void {
   if (catalogState.page <= 0) return
+  if (nameSortFullList !== null) {
+    const prevPage = catalogState.page - 1
+    const start = prevPage * PAGE_SIZE
+    setState({
+      page: prevPage,
+      items: nameSortFullList.slice(start, start + PAGE_SIZE)
+    })
+    return
+  }
   setState({ page: catalogState.page - 1 })
   loadItems()
 }
@@ -122,6 +146,7 @@ export function prevPage(): void {
 let searchDebounceTimer: ReturnType<typeof setTimeout> | null = null
 
 export function setSearchQuery(query: string): void {
+  nameSortFullList = null
   setState({ searchQuery: query, page: 0 })
   if (searchDebounceTimer) clearTimeout(searchDebounceTimer)
   searchDebounceTimer = setTimeout(() => {
@@ -131,11 +156,13 @@ export function setSearchQuery(query: string): void {
 }
 
 export function setFilter(filter: 'all' | 'featured'): void {
+  nameSortFullList = null
   setState({ filter, page: 0 })
   loadItems()
 }
 
 export function setSort(sort: SortOption): void {
+  nameSortFullList = null
   setState({ sort, page: 0 })
   loadItems()
 }
@@ -144,26 +171,41 @@ export function setSort(sort: SortOption): void {
 function loadItems(): void {
   setState({ isLoading: true })
 
+  const category = catalogState.activeCategory
+  const page = catalogState.page
+  const searchQuery = catalogState.searchQuery
+  const filter = catalogState.filter
+  const sort = catalogState.sort
+
   executeTask(async () => {
-    const { items, total } = await fetchWearables(
-      catalogState.activeCategory,
-      catalogState.page,
-      catalogState.searchQuery,
-      catalogState.filter,
-      PAGE_SIZE,
-      catalogState.sort
-    )
-    // Apply client-side name sort so direction is always reliable
-    const currentSort = catalogState.sort
-    if (currentSort === 'name_asc') {
-      items.sort((a, b) => a.name.localeCompare(b.name))
-    } else if (currentSort === 'name_desc') {
-      items.sort((a, b) => b.name.localeCompare(a.name))
+    const useFullList = sort === 'name_asc' || sort === 'name_desc' || searchQuery.trim() !== ''
+    if (useFullList) {
+      // Fetch full category, filter by name when searching, sort, then paginate in memory
+      const { items: fullList, total } = await fetchAllWearables(category, searchQuery, filter, sort)
+      nameSortFullList = fullList
+      const totalPages = Math.max(1, Math.ceil(fullList.length / PAGE_SIZE))
+      const start = page * PAGE_SIZE
+      const pageItems = fullList.slice(start, start + PAGE_SIZE)
+      setState({
+        items: pageItems,
+        totalPages,
+        isLoading: false
+      })
+    } else {
+      nameSortFullList = null
+      const { items, total } = await fetchWearables(
+        category,
+        page,
+        searchQuery,
+        filter,
+        PAGE_SIZE,
+        'newest'
+      )
+      setState({
+        items,
+        totalPages: Math.max(1, Math.ceil(total / PAGE_SIZE)),
+        isLoading: false
+      })
     }
-    setState({
-      items,
-      totalPages: Math.max(1, Math.ceil(total / PAGE_SIZE)),
-      isLoading: false
-    })
   })
 }

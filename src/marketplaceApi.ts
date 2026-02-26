@@ -75,3 +75,38 @@ export async function fetchWearables(
     return { items: [], total: 0 }
   }
 }
+
+const CHUNK_SIZE = 100
+
+/** Fetches all wearables for a category (in chunks), for client-side sort + pagination. */
+/** When searchQuery is set, fetches full category then filters by name client-side so search matches all names. */
+export async function fetchAllWearables(
+  category: WearableCategory,
+  searchQuery = '',
+  filter: 'all' | 'featured' = 'all',
+  sort: SortOption = 'newest'
+): Promise<{ items: MarketplaceItem[]; total: number }> {
+  // Don't send search to API: we fetch everything then filter by name so "alien" matches every item with "alien" in the name
+  const first = await fetchWearables(category, 0, '', filter, CHUNK_SIZE, 'newest')
+  const total = first.total
+  const all: MarketplaceItem[] = [...first.items]
+  if (total > CHUNK_SIZE) {
+    const numChunks = Math.ceil(total / CHUNK_SIZE)
+    for (let page = 1; page < numChunks; page++) {
+      const next = await fetchWearables(category, page, '', filter, CHUNK_SIZE, 'newest')
+      all.push(...next.items)
+    }
+  }
+  const query = searchQuery.trim().toLowerCase()
+  const filtered = query
+    ? all.filter((item) => item.name.toLowerCase().includes(query))
+    : all
+  const cmp = (a: MarketplaceItem, b: MarketplaceItem) =>
+    a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
+  if (sort === 'name_asc') {
+    filtered.sort(cmp)
+  } else if (sort === 'name_desc') {
+    filtered.sort((a, b) => cmp(b, a))
+  }
+  return { items: filtered, total: filtered.length }
+}

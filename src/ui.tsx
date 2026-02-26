@@ -44,7 +44,7 @@ const CatalogPanelInner = (): ReactEcs.JSX.Element => {
   const currentWearables = getCurrentWearables?.() ?? []
 
   return (
-    // Full-screen dimmed backdrop — also acts as the flex centering container
+    // Full-screen flex centering container (no dimmed backdrop)
     <UiEntity
       uiTransform={{
         positionType: 'absolute',
@@ -54,13 +54,12 @@ const CatalogPanelInner = (): ReactEcs.JSX.Element => {
         justifyContent: 'center',
         alignItems: 'center'
       }}
-      uiBackground={{ color: { r: 0, g: 0, b: 0, a: 0.55 } }}
     >
-      {/* Actual popup panel — fixed size, centered */}
+      {/* Actual popup panel — fixed size, centered (~1.2x scale) */}
       <UiEntity
         uiTransform={{
-          width: 1040,
-          height: 660,
+          width: 1248,
+          height: 792,
           flexDirection: 'column'
         }}
         uiBackground={{ color: { r: 0.05, g: 0.03, b: 0.12, a: 0.97 } }}
@@ -115,7 +114,6 @@ const RootUi = (): ReactEcs.JSX.Element => {
             justifyContent: 'center',
             alignItems: 'center'
           }}
-          uiBackground={{ color: { r: 0, g: 0, b: 0, a: 0.55 } }}
         >
           <OutfitPanel
             slots={slots}
