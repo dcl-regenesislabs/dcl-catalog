@@ -6,12 +6,14 @@ import {
   PlayerIdentityData,
   AvatarBase,
   AvatarEquippedData,
-  executeTask
+  executeTask,
+  Entity
 } from '@dcl/sdk/ecs'
 import { Vector3 } from '@dcl/sdk/math'
 import { getPlayer, onEnterScene, onLeaveScene } from '@dcl/sdk/players'
 import { PlayerBoothState } from './types'
 import { spawnClone, despawnClone } from './tryOnEngine'
+import { isBevy } from 'src'
 
 
 // ─── Per-player state map ─────────────────────────────────────────────────────
@@ -33,13 +35,15 @@ export function setBoothCallbacks(
 const LOG = (msg: string, ...args: unknown[]) => console.log('[DCL Catalog]', msg, ...args)
 
 // ─── Setup ────────────────────────────────────────────────────────────────────
-export function setupDressingRoom(): void {
+export async function setupDressingRoom(): Promise<void> {
   LOG('setupDressingRoom: createSceneWideModifierArea')
   createSceneWideModifierArea()
   LOG('setupDressingRoom: registerPlayerLifecycle')
   registerPlayerLifecycle()
   LOG('setupDressingRoom: setupCloneFollowSystem')
-  setupCloneFollowSystem()
+  if (!await isBevy) {
+    setupCloneFollowSystem()
+  }
   LOG('setupDressingRoom: done')
 }
 
@@ -123,9 +127,10 @@ function sleep(ms: number): Promise<void> {
 }
 
 // ─── Enter/Exit scene ─────────────────────────────────────────────────────────
-function enterScene(playerData: {
+async function enterScene(playerData: {
   userId: string
   name?: string
+  entity: Entity
   avatar?: {
     bodyShapeUrn?: string
     skinColor?: { r: number; g: number; b: number }
@@ -133,11 +138,12 @@ function enterScene(playerData: {
     eyesColor?: { r: number; g: number; b: number }
   }
   wearables?: string[]
-}): void {
+}): Promise<void> {
   if (boothStates.has(playerData.userId)) return // already spawned
 
   const state: PlayerBoothState = {
     userId: playerData.userId,
+    baseEntity: playerData.entity,
     cloneEntity: -1,
     labelEntity: -1,
     baseWearables: [...(playerData.wearables ?? [])],
@@ -153,7 +159,7 @@ function enterScene(playerData: {
 
   boothStates.set(playerData.userId, state)
   LOG('enterScene: spawning clone for', playerData.userId?.slice(0, 8) + '...')
-  spawnClone(state)
+  await spawnClone(state)
   LOG('enterScene: spawnClone done')
 
   const localPlayer = getPlayer()
@@ -177,7 +183,7 @@ function exitScene(userId: string): void {
 
 // ─── Helpers for remote players ───────────────────────────────────────────────
 // Called by index.ts if needed to sync remote player clone data from ECS
-export function syncRemotePlayers(): void {
+export async function syncRemotePlayers(): Promise<void> {
   const localPlayer = getPlayer()
   for (const [entity, identity, base, equipped] of engine.getEntitiesWith(
     PlayerIdentityData,
@@ -189,9 +195,10 @@ export function syncRemotePlayers(): void {
     if (localPlayer && userId === localPlayer.userId) continue // skip self
     if (boothStates.has(userId)) continue // already tracking
 
-    enterScene({
+    await enterScene({
       userId,
       name: base.name,
+      entity,
       avatar: {
         bodyShapeUrn: base.bodyShapeUrn,
         skinColor: base.skinColor,

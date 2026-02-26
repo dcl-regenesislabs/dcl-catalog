@@ -1,10 +1,11 @@
-import { engine, AvatarShape, Transform } from '@dcl/sdk/ecs'
+import { engine, AvatarShape, Transform, VisibilityComponent } from '@dcl/sdk/ecs'
 import { Vector3, Quaternion } from '@dcl/sdk/math'
 import { PlayerBoothState, WearableCategory } from './types'
+import { isBevy } from 'src'
 
 // Clone uses its own Transform (not AvatarAttach) so it stays independent of
 // AvatarModifierArea's AMT_HIDE_AVATARS which hides avatar attachments too.
-export function spawnClone(state: PlayerBoothState): void {
+export async function spawnClone(state: PlayerBoothState): Promise<void> {
   console.log('[DCL Catalog] spawnClone: start for userId', state.userId?.slice(0, 8) + '...')
   const clone = engine.addEntity()
   state.cloneEntity = clone as unknown as number
@@ -20,12 +21,17 @@ export function spawnClone(state: PlayerBoothState): void {
     eyeColor: state.baseEyeColor
   })
 
-  Transform.create(clone, {
-    position: Vector3.create(8, 0, 8),
-    rotation: Quaternion.Identity(),
-    scale: Vector3.One()
-  })
-  console.log('[DCL Catalog] spawnClone: done (entity created with Transform)')
+  if (await isBevy) {
+    Transform.create(clone, { parent: state.baseEntity });
+    VisibilityComponent.create(clone, { visible: true, propagateToChildren: true });
+  } else {
+    Transform.create(clone, {
+      position: Vector3.create(8, 0, 8),
+      rotation: Quaternion.Identity(),
+      scale: Vector3.One()
+    })
+  }
+  console.log(`[DCL Catalog] spawnClone: done (entity created with Transform)`)
 }
 
 export function despawnClone(state: PlayerBoothState): void {

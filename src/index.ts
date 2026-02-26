@@ -16,6 +16,7 @@ import {
   showWearableOnClone
 } from './tryOnEngine'
 import { MarketplaceItem, PlayerBoothState, SlotEntry, BaseWearableEntry, WearableCategory } from './types'
+import { getExplorerInformation } from '~system/Runtime'
 
 // ─── Category display labels (mirrors OutfitPanel.tsx for slot name building) ─
 const CATEGORY_LABELS: Partial<Record<WearableCategory, string>> = {
@@ -87,6 +88,14 @@ function buildBaseEntries(state: PlayerBoothState): BaseWearableEntry[] {
     hidden: state.hiddenWearables.has(urn)
   }))
 }
+
+export var isBevy: Promise<boolean> = getExplorerInformation({}).then((info) => {
+    console.log(`agent is ${info.agent}`)
+    if (info.agent === "bevy") {
+      return true
+    }
+    return false;
+  });
 
 export function main(): void {
   LOG('main() started')
@@ -231,7 +240,7 @@ export function main(): void {
   executeTask(async () => {
     await new Promise<void>(resolve => setTimeout(resolve, 1000))
     LOG('syncRemotePlayers: starting')
-    syncRemotePlayers()
+    await syncRemotePlayers()
     LOG('syncRemotePlayers: done')
   })
 
