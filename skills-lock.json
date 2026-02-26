@@ -1,0 +1,85 @@
+{
+  "version": 1,
+  "skills": {
+    "add-3d-models": {
+      "source": "dcl-regenesislabs/opendcl",
+      "sourceType": "github",
+      "computedHash": "bd7a66f10f9eea7f23bf7704325672d6d208cbc1a34b107a71c291272d27b998"
+    },
+    "add-interactivity": {
+      "source": "dcl-regenesislabs/opendcl",
+      "sourceType": "github",
+      "computedHash": "e1d60dc5c143b315a5aafd51fbd5d45b8c9c9f76491664ca624b624f6a7439b1"
+    },
+    "advanced-input": {
+      "source": "dcl-regenesislabs/opendcl",
+      "sourceType": "github",
+      "computedHash": "98802db18594aea6ad905cdfc58b38f578bf325c8aabd9713fc2e33cb76620fa"
+    },
+    "advanced-rendering": {
+      "source": "dcl-regenesislabs/opendcl",
+      "sourceType": "github",
+      "computedHash": "bf9242c6acd15b9d068e2193b95271b85f97336edfe9fc0a1b6a615ae3c8a363"
+    },
+    "animations-tweens": {
+      "source": "dcl-regenesislabs/opendcl",
+      "sourceType": "github",
+      "computedHash": "b76795974829383e59f8705c39c889919835c67486f4b7fe7594ce294e7dcc76"
+    },
+    "build-ui": {
+      "source": "dcl-regenesislabs/opendcl",
+      "sourceType": "github",
+      "computedHash": "cb0814b78298bff517cc8498ef68663b473b73a3b6076567b82bccb5474b3ecc"
+    },
+    "camera-control": {
+      "source": "dcl-regenesislabs/opendcl",
+      "sourceType": "github",
+      "computedHash": "3ca1d6401e72c0b2916b3fe503cda8d1506d0fb1ce210ffe1303175741f32201"
+    },
+    "create-scene": {
+      "source": "dcl-regenesislabs/opendcl",
+      "sourceType": "github",
+      "computedHash": "c62ea0af58f49154e979a3a810490a3754accaa55aebb649a8f92def1fde9410"
+    },
+    "deploy-scene": {
+      "source": "dcl-regenesislabs/opendcl",
+      "sourceType": "github",
+      "computedHash": "bdf04b4aff63806b9bac6e7683cfbb716ea9ea9c440f619ab8764dd109986542"
+    },
+    "deploy-worlds": {
+      "source": "dcl-regenesislabs/opendcl",
+      "sourceType": "github",
+      "computedHash": "c9701542b7b824e308b93f7217f2dd0e23da95e64a5bff6a99078a76e04061a1"
+    },
+    "lighting-environment": {
+      "source": "dcl-regenesislabs/opendcl",
+      "sourceType": "github",
+      "computedHash": "c0fa16e139c7b9867cd4f28ca781ccb5a9530115000bb06bf7c0ae776d772a73"
+    },
+    "multiplayer-sync": {
+      "source": "dcl-regenesislabs/opendcl",
+      "sourceType": "github",
+      "computedHash": "5c5e6acd1a22687380807dcc74a6f70bda3281d9e614afe6bac4f2ec8e8ae34a"
+    },
+    "nft-blockchain": {
+      "source": "dcl-regenesislabs/opendcl",
+      "sourceType": "github",
+      "computedHash": "68f9c9f4d48c40dc3a472715087a7c426359ffa1aeeef6190a074301a72a0e32"
+    },
+    "optimize-scene": {
+      "source": "dcl-regenesislabs/opendcl",
+      "sourceType": "github",
+      "computedHash": "95f374098439e3bc4636e8470c0f609c111fbac8f29effe11b25a4d883f8b20b"
+    },
+    "player-avatar": {
+      "source": "dcl-regenesislabs/opendcl",
+      "sourceType": "github",
+      "computedHash": "1ecc3d2173edcd38ebcd266356e214de2e1165d833ddb14fc915794600a0be77"
+    },
+    "scene-runtime": {
+      "source": "dcl-regenesislabs/opendcl",
+      "sourceType": "github",
+      "computedHash": "7ac64c3c6eeb553920b3330184743ed76e6216a856be3283550b5d8b6b2e2e80"
+    }
+  }
+}
