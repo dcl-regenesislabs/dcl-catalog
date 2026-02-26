@@ -157,6 +157,8 @@ This runs `sdk-commands start` (Decentraland SDK 7 preview). Your browser or the
 3. Use **Try On** on any item to apply it to your clone; use **My Outfit** to manage slots and reset.
 4. **Buy** opens the Marketplace in the browser (current link may redirect to search instead of the item—see “To Add or Implement Correctly”).
 
+**Debugging load / startup:** If the scene seems to hang or never finish loading, open the **browser developer console** (F12 or Right-click → Inspect → Console). The scene logs progress with the prefix `[DCL Catalog]`. You should see `main() started` → steps 1–8 → `main() finished`, then `player lifecycle: waiting for getPlayer()...` and eventually `enterScene done` and `spawnClone: done`. If logs stop at a specific step, the hang is there (e.g. stuck on `getPlayer()` or inside `spawnClone`). Filter the console by `DCL Catalog` to see only these messages.
+
 ---
 
 ## Build & Deploy

@@ -1,5 +1,4 @@
-import { engine, TextShape, Transform, Billboard, BillboardMode } from '@dcl/sdk/ecs'
-import { Vector3 } from '@dcl/sdk/math'
+import { engine, TextShape, Billboard, BillboardMode, AvatarAttach, AvatarAnchorPointType } from '@dcl/sdk/ecs'
 import { MessageBus } from '@dcl/sdk/message-bus'
 import { PlayerBoothState, ShowcasePayload } from './types'
 
@@ -9,7 +8,7 @@ const SHOWCASE_EVENT = 'catalog:showcase'
 // ─── Broadcast ────────────────────────────────────────────────────────────────
 // Call this when the local player tries on an item.
 // Tells all other players which item is being showcased (for labels).
-// Note: the actual visual change propagates via syncEntity automatically.
+// The visual clone is per-client via AvatarAttach; labels show what's being tried on.
 export function broadcastOutfit(state: PlayerBoothState, wearableName: string): void {
   const payload: ShowcasePayload = {
     senderId: state.userId,
@@ -27,7 +26,7 @@ export function setupSocialLayer(onOutfitChange: (payload: ShowcasePayload) => v
 }
 
 // ─── Floating Label ───────────────────────────────────────────────────────────
-// A Billboard TextShape 2.2m above the clone, always facing the camera.
+// A Billboard TextShape attached to the player's name-tag anchor, always facing the camera.
 export function spawnFloatingLabel(state: PlayerBoothState, playerName: string): void {
   if (state.labelEntity !== -1) return
 
@@ -42,10 +41,10 @@ export function spawnFloatingLabel(state: PlayerBoothState, playerName: string):
     outlineWidth: 0.15
   })
 
-  // Position 2.2m above clone (clone is at y=0 ground level)
-  const clonePos = getClonePosition(state)
-  Transform.create(label, {
-    position: Vector3.create(clonePos.x, clonePos.y + 2.2, clonePos.z)
+  // Attach to the player's name-tag anchor — auto-follows the avatar
+  AvatarAttach.create(label, {
+    avatarId: state.userId,
+    anchorPointId: AvatarAnchorPointType.AAPT_NAME_TAG
   })
 
   Billboard.create(label, { billboardMode: BillboardMode.BM_Y })
@@ -74,14 +73,6 @@ export function despawnFloatingLabel(state: PlayerBoothState): void {
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-function getClonePosition(state: PlayerBoothState): { x: number; y: number; z: number } {
-  if (state.cloneEntity !== -1) {
-    const t = Transform.getOrNull(state.cloneEntity as unknown as any)
-    if (t) return t.position
-  }
-  return { x: 8, y: 0, z: 8 }
-}
-
 function truncate(text: string, maxLen: number): string {
   if (text.length <= maxLen) return text
   return text.substring(0, maxLen - 2) + '..'

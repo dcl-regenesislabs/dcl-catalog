@@ -1,10 +1,10 @@
 import ReactEcs, { ReactEcsRenderer, UiEntity } from '@dcl/sdk/react-ecs'
-import { catalogState, selectCategory, goBackToCategories } from './catalogUI'
+import { catalogState, selectCategory, goBackToCategories, hideCatalog, toggleOutfitPanel } from './catalogUI'
 import { CategoryScreen } from './ui/CategoryScreen'
 import { ItemBrowserScreen } from './ui/ItemBrowserScreen'
 import { TopHud } from './ui/TopHud'
 import { OutfitPanel } from './ui/OutfitPanel'
-import { CategoryDef, SlotEntry, WearableCategory } from './types'
+import { CategoryDef, SlotEntry, BaseWearableEntry, WearableCategory } from './types'
 
 // ─── Callbacks wired from index.ts ────────────────────────────────────────────
 let onResetOutfitCallback: (() => void) | null = null
@@ -12,6 +12,7 @@ let getCurrentWearables: (() => string[]) | null = null
 
 // Outfit-panel callbacks
 let getOutfitSlots: (() => SlotEntry[]) | null = null
+let getBaseWearablesCb: (() => BaseWearableEntry[]) | null = null
 let onToggleVisibilityCb: ((urn: string, isCurrentlyHidden: boolean) => void) | null = null
 let onRemoveWearableCb: ((category: WearableCategory) => void) | null = null
 let onResetAllCb: (() => void) | null = null
@@ -26,43 +27,59 @@ export function setUiCallbacks(
 
 export function setOutfitPanelCallbacks(
   getSlots: () => SlotEntry[],
+  getBase: () => BaseWearableEntry[],
   onToggle: (urn: string, isCurrentlyHidden: boolean) => void,
   onRemove: (category: WearableCategory) => void,
   onResetAll: () => void
 ): void {
   getOutfitSlots = getSlots
+  getBaseWearablesCb = getBase
   onToggleVisibilityCb = onToggle
   onRemoveWearableCb = onRemove
   onResetAllCb = onResetAll
 }
 
-// ─── Catalog panel (right side) ───────────────────────────────────────────────
+// ─── Catalog panel (centered popup) ───────────────────────────────────────────
 const CatalogPanelInner = (): ReactEcs.JSX.Element => {
   const currentWearables = getCurrentWearables?.() ?? []
 
   return (
+    // Full-screen dimmed backdrop — also acts as the flex centering container
     <UiEntity
       uiTransform={{
         positionType: 'absolute',
-        position: { right: 0, top: 0 },
-        width: 600,
+        position: { top: 0, left: 0 },
+        width: '100%',
         height: '100%',
-        flexDirection: 'column'
+        justifyContent: 'center',
+        alignItems: 'center'
       }}
-      uiBackground={{ color: { r: 0.05, g: 0.03, b: 0.12, a: 0.97 } }}
+      uiBackground={{ color: { r: 0, g: 0, b: 0, a: 0.55 } }}
     >
-      {catalogState.screen === 'categories' ? (
-        <CategoryScreen
-          onSelectCategory={(cat: CategoryDef) => selectCategory(cat.value, cat.label)}
-          onReset={() => onResetOutfitCallback?.()}
-        />
-      ) : (
-        <ItemBrowserScreen
-          onBack={() => goBackToCategories()}
-          onReset={() => onResetOutfitCallback?.()}
-          currentWearables={currentWearables}
-        />
-      )}
+      {/* Actual popup panel — fixed size, centered */}
+      <UiEntity
+        uiTransform={{
+          width: 1040,
+          height: 660,
+          flexDirection: 'column'
+        }}
+        uiBackground={{ color: { r: 0.05, g: 0.03, b: 0.12, a: 0.97 } }}
+      >
+        {catalogState.screen === 'categories' ? (
+          <CategoryScreen
+            onSelectCategory={(cat: CategoryDef) => selectCategory(cat.value, cat.label)}
+            onReset={() => onResetOutfitCallback?.()}
+            onClose={() => hideCatalog()}
+          />
+        ) : (
+          <ItemBrowserScreen
+            onBack={() => goBackToCategories()}
+            onReset={() => onResetOutfitCallback?.()}
+            onClose={() => hideCatalog()}
+            currentWearables={currentWearables}
+          />
+        )}
+      </UiEntity>
     </UiEntity>
   )
 }
@@ -70,6 +87,7 @@ const CatalogPanelInner = (): ReactEcs.JSX.Element => {
 // ─── Root UI (composes all overlays) ──────────────────────────────────────────
 const RootUi = (): ReactEcs.JSX.Element => {
   const slots = getOutfitSlots?.() ?? []
+  const baseWearables = getBaseWearablesCb?.() ?? []
 
   return (
     <UiEntity
@@ -83,17 +101,31 @@ const RootUi = (): ReactEcs.JSX.Element => {
       {/* HUD buttons — always visible at top-center */}
       <TopHud />
 
-      {/* Catalog browser — right side, shown when visible */}
+      {/* Catalog browser — horizontal panel at bottom, shown when visible */}
       {catalogState.visible && <CatalogPanelInner />}
 
-      {/* Outfit panel — left side, shown when outfitPanelVisible */}
+      {/* Outfit panel — centered popup with backdrop, shown when outfitPanelVisible */}
       {catalogState.outfitPanelVisible && (
-        <OutfitPanel
-          slots={slots}
-          onToggleVisibility={(urn, hidden) => onToggleVisibilityCb?.(urn, hidden)}
-          onRemove={(cat) => onRemoveWearableCb?.(cat)}
-          onResetAll={() => onResetAllCb?.()}
-        />
+        <UiEntity
+          uiTransform={{
+            positionType: 'absolute',
+            position: { top: 0, left: 0 },
+            width: '100%',
+            height: '100%',
+            justifyContent: 'center',
+            alignItems: 'center'
+          }}
+          uiBackground={{ color: { r: 0, g: 0, b: 0, a: 0.55 } }}
+        >
+          <OutfitPanel
+            slots={slots}
+            baseWearables={baseWearables}
+            onToggleVisibility={(urn, hidden) => onToggleVisibilityCb?.(urn, hidden)}
+            onRemove={(cat) => onRemoveWearableCb?.(cat)}
+            onResetAll={() => onResetAllCb?.()}
+            onClose={() => toggleOutfitPanel()}
+          />
+        </UiEntity>
       )}
     </UiEntity>
   )
@@ -101,8 +133,10 @@ const RootUi = (): ReactEcs.JSX.Element => {
 
 // ─── Setup ────────────────────────────────────────────────────────────────────
 export function setupUi(): void {
+  console.log('[DCL Catalog] setupUi: setting UI renderer')
   ReactEcsRenderer.setUiRenderer(RootUi, {
     virtualWidth: 1920,
     virtualHeight: 1080
   })
+  console.log('[DCL Catalog] setupUi: done')
 }

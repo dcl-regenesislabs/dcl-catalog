@@ -10,12 +10,15 @@ export function getThumbnailUrl(urn: string): string {
   return `${PEER_THUMBNAIL}/${urn}/thumbnail`
 }
 
+export type SortOption = 'newest' | 'name_asc' | 'name_desc'
+
 export async function fetchWearables(
   category: WearableCategory,
   page: number,
   searchQuery = '',
   filter: 'all' | 'featured' = 'all',
-  pageSize = 16
+  pageSize = 10,
+  sort: SortOption = 'newest'
 ): Promise<{ items: MarketplaceItem[]; total: number }> {
   const skip = page * pageSize
 
@@ -24,7 +27,14 @@ export async function fetchWearables(
     url += `&search=${encodeURIComponent(searchQuery.trim())}`
   }
   if (filter === 'featured') {
-    url += `&isSoldOut=false&onlySmart=false`
+    url += `&isSoldOut=false`
+  }
+  // 'newest' uses the API's own sort; name sorts both request &sortBy=name
+  // (server groups pages by name order) — client-side re-sort handles direction
+  if (sort === 'newest') {
+    url += `&sortBy=newest`
+  } else {
+    url += `&sortBy=name`
   }
 
   try {
@@ -34,8 +44,12 @@ export async function fetchWearables(
       return { items: [], total: 0 }
     }
     const json = await response.json()
-    // API returns { data: [...], total: number }
-    const raw = json.data ?? []
+    // API returns { ok: true, data: { results: [...], total: N } }
+    // but older versions returned { data: [...], total: N } — handle both
+    const bodyData = json.data
+    const raw: any[] = Array.isArray(bodyData) ? bodyData : (bodyData?.results ?? [])
+    const total: number = Array.isArray(bodyData) ? (json.total ?? 0) : (bodyData?.total ?? json.total ?? 0)
+    console.log(`[marketplaceApi] ${category} page ${page}: ${raw.length} items / ${total} total`)
     const items: MarketplaceItem[] = raw.map((item: any) => {
       const urn: string = item.urn ?? ''
       // API field is `thumbnail`, not `image`.  It returns a direct image/png URL
@@ -55,7 +69,7 @@ export async function fetchWearables(
         itemId: item.itemId ?? ''
       }
     })
-    return { items, total: json.total ?? 0 }
+    return { items, total }
   } catch (err) {
     console.error('[marketplaceApi] fetchWearables failed:', err)
     return { items: [], total: 0 }

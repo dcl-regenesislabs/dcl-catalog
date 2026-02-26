@@ -3,6 +3,8 @@ import { getPlayer } from '@dcl/sdk/players'
 import { openExternalUrl } from '~system/RestrictedActions'
 
 import { setupUi, setUiCallbacks, setOutfitPanelCallbacks } from './ui'
+
+const LOG = (msg: string, ...args: unknown[]) => console.log('[DCL Catalog]', msg, ...args)
 import { setupDressingRoom, setBoothCallbacks, boothStates, syncRemotePlayers } from './dressingRoom'
 import { setupSocialLayer, broadcastOutfit, spawnFloatingLabel, updateFloatingLabel } from './socialLayer'
 import { setCatalogCallbacks, showCatalog, hideCatalog, showOutfitPanel } from './catalogUI'
@@ -13,7 +15,7 @@ import {
   hideWearableOnClone,
   showWearableOnClone
 } from './tryOnEngine'
-import { MarketplaceItem, PlayerBoothState, SlotEntry, WearableCategory } from './types'
+import { MarketplaceItem, PlayerBoothState, SlotEntry, BaseWearableEntry, WearableCategory } from './types'
 
 // ─── Category display labels (mirrors OutfitPanel.tsx for slot name building) ─
 const CATEGORY_LABELS: Partial<Record<WearableCategory, string>> = {
@@ -52,11 +54,50 @@ function buildSlotEntries(state: PlayerBoothState): SlotEntry[] {
   return entries
 }
 
+// ─── Helper: derive a readable name from a wearable URN ───────────────────────
+function formatSegment(s: string): string {
+  return s
+    .replace(/([A-Z])/g, ' $1')
+    .replace(/[-_]/g, ' ')
+    .trim()
+    .replace(/\s+/g, ' ')
+    .replace(/\b\w/g, (c) => c.toUpperCase())
+}
+
+function formatUrnName(urn: string): string {
+  const parts = urn.split(':')
+  const last = parts[parts.length - 1] ?? urn
+  // Pure token IDs (digits) or contract addresses (0x…) → not human readable
+  if (/^\d+$/.test(last) || /^0x[0-9a-fA-F]+$/.test(last)) {
+    const prev = parts[parts.length - 2] ?? ''
+    // If second-to-last is also a contract address, nothing useful — use short ID
+    if (!prev || /^0x[0-9a-fA-F]+$/.test(prev)) {
+      return 'Item #' + last.substring(0, 8)
+    }
+    return formatSegment(prev)
+  }
+  return formatSegment(last)
+}
+
+// ─── Helper: build BaseWearableEntry array from base wearables ────────────────
+function buildBaseEntries(state: PlayerBoothState): BaseWearableEntry[] {
+  return state.baseWearables.map((urn) => ({
+    urn,
+    name: formatUrnName(urn),
+    hidden: state.hiddenWearables.has(urn)
+  }))
+}
+
 export function main(): void {
+  LOG('main() started')
+
   // 1. Start UI renderer
+  LOG('step 1: setupUi')
   setupUi()
+  LOG('step 1: setupUi done')
 
   // 2. Wire UI callbacks (reset outfit + expose currentWearables to UI)
+  LOG('step 2: setUiCallbacks')
   setUiCallbacks(
     // onReset
     () => {
@@ -74,16 +115,26 @@ export function main(): void {
       return state?.currentWearables ?? []
     }
   )
+  LOG('step 2: setUiCallbacks done')
 
   // 3. Wire outfit-panel callbacks
+  LOG('step 3: setOutfitPanelCallbacks')
   setOutfitPanelCallbacks(
-    // getSlots — called every render tick to build the slot list
+    // getSlots — tried-on wearables
     () => {
       const p = getPlayer()
       if (!p) return []
       const state = boothStates.get(p.userId)
       if (!state) return []
       return buildSlotEntries(state)
+    },
+    // getBaseWearables — original backpack wearables
+    () => {
+      const p = getPlayer()
+      if (!p) return []
+      const state = boothStates.get(p.userId)
+      if (!state) return []
+      return buildBaseEntries(state)
     },
     // onToggleVisibility
     (urn: string, isCurrentlyHidden: boolean) => {
@@ -114,11 +165,15 @@ export function main(): void {
       resetCloneToBase(state)
     }
   )
+  LOG('step 3: setOutfitPanelCallbacks done')
 
   // 4. Setup dressing room (scene-wide AvatarModifierArea + player lifecycle)
+  LOG('step 4: setupDressingRoom')
   setupDressingRoom()
+  LOG('step 4: setupDressingRoom done')
 
   // 5. Wire booth callbacks
+  LOG('step 5: setBoothCallbacks')
   setBoothCallbacks(
     // onLocalPlayerEnter — show HUD/catalog, open outfit panel, spawn label
     (state: PlayerBoothState) => {
@@ -132,8 +187,10 @@ export function main(): void {
       hideCatalog()
     }
   )
+  LOG('step 5: setBoothCallbacks done')
 
   // 6. Wire catalog Try On / Buy
+  LOG('step 6: setCatalogCallbacks')
   setCatalogCallbacks(
     // onTryOn
     (item: MarketplaceItem) => {
@@ -158,18 +215,30 @@ export function main(): void {
       })
     }
   )
+  LOG('step 6: setCatalogCallbacks done')
 
   // 7. Social layer — receive outfit change labels from other players
+  LOG('step 7: setupSocialLayer')
   setupSocialLayer((payload) => {
     const state = boothStates.get(payload.senderId)
     if (!state) return
     updateFloatingLabel(state, payload.wearableName)
   })
+  LOG('step 7: setupSocialLayer done')
 
-  // 8. Sync any remote players already in the scene when this client joined
-  //    (onEnterScene won't fire for players who were already present)
+  // 8. Show catalog immediately so the scene doesn't feel stuck while player data loads
+  LOG('step 8: showCatalog')
+  showCatalog()
+  LOG('step 8: showCatalog done')
+
+  // 9. Sync any remote players already in the scene when this client joined
+  LOG('step 9: scheduling syncRemotePlayers in 1s')
   executeTask(async () => {
     await new Promise<void>(resolve => setTimeout(resolve, 1000))
+    LOG('syncRemotePlayers: starting')
     syncRemotePlayers()
+    LOG('syncRemotePlayers: done')
   })
+
+  LOG('main() finished (async tasks may still run)')
 }

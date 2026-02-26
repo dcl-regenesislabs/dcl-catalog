@@ -13,6 +13,7 @@ import { getPlayer, onEnterScene, onLeaveScene } from '@dcl/sdk/players'
 import { PlayerBoothState } from './types'
 import { spawnClone, despawnClone } from './tryOnEngine'
 
+
 // ─── Per-player state map ─────────────────────────────────────────────────────
 // Exported so index.ts and socialLayer can read/update state for any player
 export const boothStates = new Map<string, PlayerBoothState>()
@@ -29,17 +30,20 @@ export function setBoothCallbacks(
   onLocalPlayerExit = onExit
 }
 
+const LOG = (msg: string, ...args: unknown[]) => console.log('[DCL Catalog]', msg, ...args)
+
 // ─── Setup ────────────────────────────────────────────────────────────────────
 export function setupDressingRoom(): void {
+  LOG('setupDressingRoom: createSceneWideModifierArea')
   createSceneWideModifierArea()
+  LOG('setupDressingRoom: registerPlayerLifecycle')
   registerPlayerLifecycle()
+  LOG('setupDressingRoom: setupCloneFollowSystem')
   setupCloneFollowSystem()
+  LOG('setupDressingRoom: done')
 }
 
 // ─── Clone Follow System ──────────────────────────────────────────────────────
-// Runs every frame. Mirrors the local player's Transform (position + rotation)
-// to their clone so it moves and animates in sync with the real avatar.
-// AvatarShape auto-plays walk/run/idle based on position delta between frames.
 function setupCloneFollowSystem(): void {
   engine.addSystem((_dt: number) => {
     if (!Transform.has(engine.PlayerEntity)) return
@@ -54,12 +58,6 @@ function setupCloneFollowSystem(): void {
     const ct = Transform.getMutable(state.cloneEntity as unknown as any)
     ct.position = { x: pt.position.x, y: pt.position.y, z: pt.position.z }
     ct.rotation = { x: pt.rotation.x, y: pt.rotation.y, z: pt.rotation.z, w: pt.rotation.w }
-
-    // Also keep the floating label above the clone as it moves
-    if (state.labelEntity !== -1) {
-      const lt = Transform.getMutable(state.labelEntity as unknown as any)
-      lt.position = { x: pt.position.x, y: pt.position.y + 2.2, z: pt.position.z }
-    }
   }, undefined, 'clone-follow-system')
 }
 
@@ -82,20 +80,27 @@ function createSceneWideModifierArea(): void {
 // ─── Player lifecycle ─────────────────────────────────────────────────────────
 function registerPlayerLifecycle(): void {
   // Spawn the local player's clone on scene entry with a retry loop,
-  // since getPlayer() returns null until data is available (usually < 1s)
+  // since getPlayer() returns null until data is available (usually < 1s).
+  // Use 100ms intervals and 25 retries (~2.5s max) so the scene doesn't feel stuck.
   executeTask(async () => {
+    LOG('player lifecycle: waiting for getPlayer()...')
     let playerData = getPlayer()
     let retries = 0
-    while (!playerData && retries < 30) {
-      await sleep(200)
+    while (!playerData && retries < 25) {
+      await sleep(100)
       playerData = getPlayer()
       retries++
+      if (retries === 1 || retries % 5 === 0 || retries === 25) {
+        LOG('player lifecycle: attempt', retries, '/ 25, getPlayer() =', playerData ? 'ok' : 'null')
+      }
     }
     if (!playerData) {
-      console.error('[dressingRoom] Could not get local player data after retries')
+      LOG('player lifecycle: FAILED — no player data after 25 retries')
       return
     }
+    LOG('player lifecycle: player data ready, userId =', playerData.userId?.slice(0, 8) + '...')
     enterScene(playerData)
+    LOG('player lifecycle: enterScene done')
   })
 
   // Also hook into onEnterScene for when other players join
@@ -128,7 +133,6 @@ function enterScene(playerData: {
     eyesColor?: { r: number; g: number; b: number }
   }
   wearables?: string[]
-  position?: { x: number; y: number; z: number }
 }): void {
   if (boothStates.has(playerData.userId)) return // already spawned
 
@@ -148,7 +152,9 @@ function enterScene(playerData: {
   }
 
   boothStates.set(playerData.userId, state)
-  spawnClone(state, playerData.position)
+  LOG('enterScene: spawning clone for', playerData.userId?.slice(0, 8) + '...')
+  spawnClone(state)
+  LOG('enterScene: spawnClone done')
 
   const localPlayer = getPlayer()
   if (localPlayer && localPlayer.userId === playerData.userId) {
@@ -183,7 +189,6 @@ export function syncRemotePlayers(): void {
     if (localPlayer && userId === localPlayer.userId) continue // skip self
     if (boothStates.has(userId)) continue // already tracking
 
-    const transform = Transform.getOrNull(entity)
     enterScene({
       userId,
       name: base.name,
@@ -193,8 +198,7 @@ export function syncRemotePlayers(): void {
         hairColor: base.hairColor,
         eyesColor: base.eyesColor
       },
-      wearables: [...equipped.wearableUrns],
-      position: transform?.position
+      wearables: [...equipped.wearableUrns]
     })
   }
 }

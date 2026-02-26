@@ -17,7 +17,7 @@ export function WearableGrid({ items, currentWearables }: WearableGridProps): Re
         justifyContent: 'flex-start',
         alignContent: 'flex-start',
         padding: 6,
-        overflow: 'scroll'
+        overflow: 'hidden'
       }}
       uiBackground={{ color: { r: 0.05, g: 0.03, b: 0.10, a: 1 } }}
     >

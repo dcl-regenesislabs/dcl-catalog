@@ -2,9 +2,10 @@ import ReactEcs, { UiEntity, Label, Button } from '@dcl/sdk/react-ecs'
 
 interface HeaderProps {
   onReset: () => void
+  onClose: () => void
 }
 
-export function Header({ onReset }: HeaderProps): ReactEcs.JSX.Element {
+export function Header({ onReset, onClose }: HeaderProps): ReactEcs.JSX.Element {
   return (
     <UiEntity
       uiTransform={{
@@ -27,9 +28,16 @@ export function Header({ onReset }: HeaderProps): ReactEcs.JSX.Element {
         value="Reset"
         variant="secondary"
         onMouseDown={onReset}
-        uiTransform={{ width: 72, height: 32 }}
+        uiTransform={{ width: 72, height: 32, margin: { right: 8 } }}
         fontSize={13}
         color={{ r: 1, g: 0.5, b: 0.3, a: 1 }}
+      />
+      <Button
+        value="✕"
+        variant="secondary"
+        onMouseDown={onClose}
+        uiTransform={{ width: 36, height: 36 }}
+        fontSize={18}
       />
     </UiEntity>
   )

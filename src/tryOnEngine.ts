@@ -1,13 +1,11 @@
 import { engine, AvatarShape, Transform } from '@dcl/sdk/ecs'
 import { Vector3, Quaternion } from '@dcl/sdk/math'
-import { syncEntity } from '@dcl/sdk/network'
 import { PlayerBoothState, WearableCategory } from './types'
 
-// Default standing position — clones spawn near scene center
-// dressingRoom will override with the player's actual position when available
-const DEFAULT_CLONE_POSITION = Vector3.create(8, 0, 8)
-
-export function spawnClone(state: PlayerBoothState, position?: { x: number; y: number; z: number }): void {
+// Clone uses its own Transform (not AvatarAttach) so it stays independent of
+// AvatarModifierArea's AMT_HIDE_AVATARS which hides avatar attachments too.
+export function spawnClone(state: PlayerBoothState): void {
+  console.log('[DCL Catalog] spawnClone: start for userId', state.userId?.slice(0, 8) + '...')
   const clone = engine.addEntity()
   state.cloneEntity = clone as unknown as number
 
@@ -23,16 +21,11 @@ export function spawnClone(state: PlayerBoothState, position?: { x: number; y: n
   })
 
   Transform.create(clone, {
-    position: position
-      ? Vector3.create(position.x, position.y, position.z)
-      : DEFAULT_CLONE_POSITION,
+    position: Vector3.create(8, 0, 8),
     rotation: Quaternion.Identity(),
     scale: Vector3.One()
   })
-
-  // Sync this clone to all players in the scene — no entityEnumId means
-  // auto-assignment, safe for per-player dynamically created entities
-  syncEntity(clone, [Transform.componentId, AvatarShape.componentId])
+  console.log('[DCL Catalog] spawnClone: done (entity created with Transform)')
 }
 
 export function despawnClone(state: PlayerBoothState): void {

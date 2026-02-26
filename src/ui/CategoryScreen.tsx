@@ -7,9 +7,10 @@ import { CategoryDef } from '../types'
 interface CategoryScreenProps {
   onSelectCategory: (category: CategoryDef) => void
   onReset: () => void
+  onClose: () => void
 }
 
-export function CategoryScreen({ onSelectCategory, onReset }: CategoryScreenProps): ReactEcs.JSX.Element {
+export function CategoryScreen({ onSelectCategory, onReset, onClose }: CategoryScreenProps): ReactEcs.JSX.Element {
   return (
     <UiEntity
       uiTransform={{
@@ -18,7 +19,7 @@ export function CategoryScreen({ onSelectCategory, onReset }: CategoryScreenProp
         flexDirection: 'column'
       }}
     >
-      <Header onReset={onReset} />
+      <Header onReset={onReset} onClose={onClose} />
 
       {/* Subtitle */}
       <UiEntity

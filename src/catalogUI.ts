@@ -1,19 +1,28 @@
 import { executeTask } from '@dcl/sdk/ecs'
-import { CatalogState, MarketplaceItem, WearableCategory, CategoryDef } from './types'
+import { CatalogState, MarketplaceItem, WearableCategory, CategoryDef, SortOption } from './types'
 import { fetchWearables } from './marketplaceApi'
 
-const PAGE_SIZE = 16
+const PAGE_SIZE = 10
 
-// ─── Category definitions ─────────────────────────────────────────────────────
+// ─── Category definitions — all 17 DCL wearable slots ────────────────────────
 export const CATALOG_CATEGORIES: CategoryDef[] = [
-  { label: 'CLOTHING',    value: 'upper_body',   color: { r: 0.18, g: 0.38, b: 0.85, a: 1 } }, // blue
+  { label: 'TOPS',        value: 'upper_body',   color: { r: 0.18, g: 0.38, b: 0.85, a: 1 } }, // blue
   { label: 'BOTTOMS',     value: 'lower_body',   color: { r: 0.20, g: 0.65, b: 0.40, a: 1 } }, // green
   { label: 'SHOES',       value: 'feet',         color: { r: 0.85, g: 0.45, b: 0.10, a: 1 } }, // orange
   { label: 'HATS',        value: 'head',         color: { r: 0.70, g: 0.20, b: 0.70, a: 1 } }, // purple
+  { label: 'TOP HEAD',    value: 'top_head',     color: { r: 0.30, g: 0.55, b: 0.25, a: 1 } }, // dark green
+  { label: 'HELMETS',     value: 'helmet',       color: { r: 0.40, g: 0.45, b: 0.52, a: 1 } }, // steel
+  { label: 'MASKS',       value: 'mask',         color: { r: 0.80, g: 0.15, b: 0.15, a: 1 } }, // red
+  { label: 'TIARAS',      value: 'tiara',        color: { r: 0.90, g: 0.45, b: 0.65, a: 1 } }, // rose
   { label: 'EYEWEAR',     value: 'eyewear',      color: { r: 0.10, g: 0.65, b: 0.75, a: 1 } }, // cyan
-  { label: 'HAIR',        value: 'hair',         color: { r: 0.80, g: 0.20, b: 0.35, a: 1 } }, // pink-red
-  { label: 'ACCESSORIES', value: 'earring',      color: { r: 0.90, g: 0.70, b: 0.10, a: 1 } }, // gold
-  { label: 'SKIN',        value: 'skin',         color: { r: 0.55, g: 0.30, b: 0.70, a: 1 } }  // lavender
+  { label: 'EYEBROWS',    value: 'eyebrows',     color: { r: 0.60, g: 0.35, b: 0.18, a: 1 } }, // brown
+  { label: 'EYES',        value: 'eyes',         color: { r: 0.25, g: 0.60, b: 0.90, a: 1 } }, // sky blue
+  { label: 'MOUTH',       value: 'mouth',        color: { r: 0.85, g: 0.30, b: 0.50, a: 1 } }, // pink
+  { label: 'HAIR',        value: 'hair',         color: { r: 0.80, g: 0.20, b: 0.35, a: 1 } }, // crimson
+  { label: 'FACIAL HAIR', value: 'facial_hair',  color: { r: 0.55, g: 0.32, b: 0.14, a: 1 } }, // warm brown
+  { label: 'EARRINGS',    value: 'earring',      color: { r: 0.90, g: 0.70, b: 0.10, a: 1 } }, // gold
+  { label: 'GLOVES',      value: 'hands_wear',   color: { r: 0.10, g: 0.55, b: 0.58, a: 1 } }, // teal
+  { label: 'SKIN',        value: 'skin',         color: { r: 0.55, g: 0.30, b: 0.70, a: 1 } }, // lavender
 ]
 
 // ─── Module-level mutable state ───────────────────────────────────────────────
@@ -23,13 +32,14 @@ export const catalogState: CatalogState = {
   outfitPanelVisible: false,
   screen: 'categories',
   activeCategory: 'upper_body',
-  activeCategoryLabel: 'CLOTHING',
+  activeCategoryLabel: 'TOPS',
   items: [],
   page: 0,
   totalPages: 0,
   isLoading: false,
   searchQuery: '',
-  filter: 'all'
+  filter: 'all',
+  sort: 'newest'
 }
 
 function setState(partial: Partial<CatalogState>): void {
@@ -58,6 +68,7 @@ export function handleBuy(item: MarketplaceItem): void {
 
 // ─── Navigation ───────────────────────────────────────────────────────────────
 export function showCatalog(): void {
+  console.log('[DCL Catalog] showCatalog()')
   setState({ visible: true, screen: 'categories' })
 }
 
@@ -124,6 +135,11 @@ export function setFilter(filter: 'all' | 'featured'): void {
   loadItems()
 }
 
+export function setSort(sort: SortOption): void {
+  setState({ sort, page: 0 })
+  loadItems()
+}
+
 // ─── Fetch ────────────────────────────────────────────────────────────────────
 function loadItems(): void {
   setState({ isLoading: true })
@@ -134,8 +150,16 @@ function loadItems(): void {
       catalogState.page,
       catalogState.searchQuery,
       catalogState.filter,
-      PAGE_SIZE
+      PAGE_SIZE,
+      catalogState.sort
     )
+    // Apply client-side name sort so direction is always reliable
+    const currentSort = catalogState.sort
+    if (currentSort === 'name_asc') {
+      items.sort((a, b) => a.name.localeCompare(b.name))
+    } else if (currentSort === 'name_desc') {
+      items.sort((a, b) => b.name.localeCompare(a.name))
+    }
     setState({
       items,
       totalPages: Math.max(1, Math.ceil(total / PAGE_SIZE)),

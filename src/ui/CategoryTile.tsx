@@ -15,9 +15,9 @@ export function CategoryTile({ category, onSelect }: CategoryTileProps): ReactEc
   return (
     <UiEntity
       uiTransform={{
-        width: 210,
-        height: 120,
-        margin: 6,
+        width: 200,
+        height: 90,
+        margin: 5,
         flexDirection: 'column',
         overflow: 'hidden'
       }}
@@ -34,7 +34,7 @@ export function CategoryTile({ category, onSelect }: CategoryTileProps): ReactEc
       <UiEntity
         uiTransform={{
           width: '100%',
-          height: 36,
+          height: 30,
           justifyContent: 'center',
           alignItems: 'center'
         }}
@@ -42,7 +42,7 @@ export function CategoryTile({ category, onSelect }: CategoryTileProps): ReactEc
       >
         <Label
           value={category.label}
-          fontSize={15}
+          fontSize={13}
           color={{ r: 1, g: 1, b: 1, a: 1 }}
         />
       </UiEntity>

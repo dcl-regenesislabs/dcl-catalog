@@ -61,7 +61,7 @@ export interface PlayerBoothState {
   hiddenWearables: Set<string>             // URNs hidden from clone but kept in slotMap
 }
 
-// One row entry in the Outfit Panel
+// One row entry in the Outfit Panel (tried-on wearables)
 export interface SlotEntry {
   category: WearableCategory
   label: string   // display label for the category
@@ -70,11 +70,20 @@ export interface SlotEntry {
   hidden: boolean // whether it's currently hidden on the clone
 }
 
+// One card in the "My Backpack" column (player's original equipped wearables)
+export interface BaseWearableEntry {
+  urn: string
+  name: string    // derived from URN last segment
+  hidden: boolean // whether it's currently hidden on the clone
+}
+
 // MessageBus event payload for outfit showcase broadcasts
 export interface ShowcasePayload {
   senderId: string
   wearableName: string
 }
+
+export type SortOption = 'newest' | 'name_asc' | 'name_desc'
 
 // Catalog UI state — module-level mutable, read each render tick
 export interface CatalogState {
@@ -89,4 +98,5 @@ export interface CatalogState {
   isLoading: boolean
   searchQuery: string
   filter: 'all' | 'featured'
+  sort: SortOption
 }

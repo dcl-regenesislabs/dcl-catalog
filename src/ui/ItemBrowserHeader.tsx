@@ -4,9 +4,10 @@ import { catalogState } from '../catalogUI'
 interface ItemBrowserHeaderProps {
   onBack: () => void
   onReset: () => void
+  onClose: () => void
 }
 
-export function ItemBrowserHeader({ onBack, onReset }: ItemBrowserHeaderProps): ReactEcs.JSX.Element {
+export function ItemBrowserHeader({ onBack, onReset, onClose }: ItemBrowserHeaderProps): ReactEcs.JSX.Element {
   return (
     <UiEntity
       uiTransform={{
@@ -20,11 +21,11 @@ export function ItemBrowserHeader({ onBack, onReset }: ItemBrowserHeaderProps): 
     >
       {/* Back arrow */}
       <Button
-        value="<"
+        value="‹"
         variant="secondary"
         onMouseDown={onBack}
         uiTransform={{ width: 36, height: 36, margin: { right: 8 } }}
-        fontSize={18}
+        fontSize={20}
       />
 
       {/* Current category label */}
@@ -40,9 +41,18 @@ export function ItemBrowserHeader({ onBack, onReset }: ItemBrowserHeaderProps): 
         value="Reset"
         variant="secondary"
         onMouseDown={onReset}
-        uiTransform={{ width: 64, height: 32 }}
+        uiTransform={{ width: 64, height: 32, margin: { right: 8 } }}
         fontSize={12}
         color={{ r: 1, g: 0.5, b: 0.3, a: 1 }}
+      />
+
+      {/* Close */}
+      <Button
+        value="✕"
+        variant="secondary"
+        onMouseDown={onClose}
+        uiTransform={{ width: 36, height: 36 }}
+        fontSize={18}
       />
     </UiEntity>
   )
